@@ -14,17 +14,32 @@
   margin-bottom: 24px;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: #244f42;
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -1px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
   text-decoration: none;
 }
-h1 {
+.brand-symbol {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: #244f42;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.document-list-heading {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 20px;
+  padding: 16px 15px 0;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.4px;
 }
@@ -755,9 +770,6 @@ h1 {
   .page-header {
     flex-wrap: wrap;
     gap: 12px;
-  }
-  .page-header h1 {
-    font-size: 18px;
   }
   .detail-title {
     flex-wrap: wrap;

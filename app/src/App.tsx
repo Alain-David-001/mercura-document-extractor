@@ -209,11 +209,15 @@ function App() {
       <main className="main-content">
         <header className="page-header">
           <a className="brand" href="/" aria-label="Mercura home">
-            mercura.
+            <svg
+              className="brand-symbol"
+              viewBox="0 0 28 28"
+              aria-hidden="true"
+            >
+              <path d="M7 20V8l7 7 7-7v12" />
+            </svg>
+            <span>Mercura</span>
           </a>
-          <h1>
-            Documents <span className="count-badge">{documents.length}</span>
-          </h1>
         </header>
         {error && (
           <div className="notice error" role="alert">
@@ -239,7 +243,7 @@ function App() {
         >
           <div className="upload-copy">
             <p>{uploading ? `Uploading ${uploading}…` : "Drop PDFs here"}</p>
-            <span>100 MB · 5,000 pages per file</span>
+            <span>Maximum per file: 100 MB · 5,000 pages</span>
           </div>
           <button
             className="button primary"
@@ -278,11 +282,14 @@ function App() {
         )}
         <div className="workspace-grid">
           <section className="document-list" aria-label="Documents">
+            <h1 className="document-list-heading">
+              Documents <span className="count-badge">{documents.length}</span>
+            </h1>
             <div className="search-wrap">
               <input
                 type="search"
                 aria-label="Search documents"
-                placeholder="Search documents or projects…"
+                placeholder="Search documents…"
                 value={filter}
                 onChange={(event) => setFilter(event.target.value)}
               />
