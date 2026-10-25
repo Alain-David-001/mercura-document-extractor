@@ -41,6 +41,10 @@ npm run dev
 
 Open [the workspace](http://localhost:5173) or [API docs](http://127.0.0.1:8000/docs). Upload PDFs, wait for extraction, save reviewed project fields, and add comments. Use Delete beside Open PDF to remove a selected upload, its extracted data, edits, and comments after confirmation. Each file is queued independently. The UI refreshes status automatically; a stopped worker leaves jobs safely queued.
 
+## Test documents
+
+The [specification_documents](specification_documents/README.md) folder contains the two original scanned samples and synthetic 500-, 700-, and 1,000-page PDFs for testing chunking and concurrent processing.
+
 ## Configuration and limits
 
 Set these in ignored `server/.env`:
