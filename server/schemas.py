@@ -63,3 +63,8 @@ class Document(BaseModel):
 
 class DocumentDetail(Document):
     comments: list[Comment]
+
+
+class WorkerAvailability(BaseModel):
+    available: bool
+    last_seen_at: str | None

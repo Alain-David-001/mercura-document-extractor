@@ -33,6 +33,9 @@ def initialize(settings: Settings):
     with connect(settings) as db:
         db.execute("PRAGMA journal_mode=WAL")
         db.executescript("""
+        CREATE TABLE IF NOT EXISTS worker_heartbeats (
+            id TEXT PRIMARY KEY, last_seen REAL NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS documents (
             id TEXT PRIMARY KEY, filename TEXT NOT NULL, storage_key TEXT NOT NULL UNIQUE,
             size_bytes INTEGER NOT NULL, page_count INTEGER NOT NULL,
@@ -165,3 +168,29 @@ def delete_document(settings, document_id):
     # Filesystem cleanup follows the commit: a stale extraction cannot restore
     # deleted records. An interrupted/failed unlink may leave an orphaned file.
     return row['storage_key']
+
+
+def register_worker(settings, worker_id):
+    with connect(settings) as conn:
+        conn.execute("INSERT INTO worker_heartbeats(id,last_seen) VALUES(?,?)", (worker_id, time.time()))
+        conn.execute("DELETE FROM worker_heartbeats WHERE last_seen<?", (time.time() - 86400,))
+
+
+def pulse_worker(settings, worker_id):
+    with connect(settings) as conn:
+        # Never reinsert a registration removed during shutdown.
+        conn.execute("UPDATE worker_heartbeats SET last_seen=? WHERE id=?", (time.time(), worker_id))
+
+
+def unregister_worker(settings, worker_id):
+    with connect(settings) as conn:
+        conn.execute("DELETE FROM worker_heartbeats WHERE id=?", (worker_id,))
+
+
+def worker_availability(settings):
+    with connect(settings) as conn:
+        last_seen = conn.execute("SELECT MAX(last_seen) FROM worker_heartbeats").fetchone()[0]
+    return {
+        'available': last_seen is not None and last_seen >= time.time() - settings.worker_stale_seconds,
+        'last_seen_at': datetime.fromtimestamp(last_seen, timezone.utc).isoformat() if last_seen is not None else None,
+    }

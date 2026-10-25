@@ -31,6 +31,11 @@ export interface DocumentDetail extends DocumentRecord {
   comments: CommentRecord[];
 }
 
+export interface WorkerAvailability {
+  available: boolean;
+  last_seen_at: string | null;
+}
+
 export async function request<T>(
   path: string,
   options?: RequestInit,

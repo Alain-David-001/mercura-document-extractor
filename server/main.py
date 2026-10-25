@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse
 import db
 from config import Settings
 from processing import validate_pdf
-from schemas import Comment, CommentInput, Document, DocumentDetail, DocumentEdit
+from schemas import Comment, CommentInput, Document, DocumentDetail, DocumentEdit, WorkerAvailability
 
 logger = logging.getLogger('mercura.api')
 
@@ -63,6 +63,10 @@ def create_app(settings: Settings | None = None):
         with db.connect(settings) as conn:
             conn.execute('SELECT 1').fetchone()
         return {'status': 'ok'}
+
+    @app.get('/api/worker-status', response_model=WorkerAvailability)
+    def worker_status():
+        return db.worker_availability(settings)
 
     @app.get('/api/documents', response_model=list[Document])
     def list_documents():

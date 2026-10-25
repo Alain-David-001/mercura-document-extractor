@@ -4,6 +4,7 @@ import contextlib
 import logging
 import signal
 import tempfile
+from uuid import uuid4
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -69,13 +70,32 @@ async def run(settings, extractor, stop):
                 logger.error('worker_loop_failed category=%s', type(exc).__name__)
                 await asyncio.sleep(settings.poll_seconds)
 
+    worker_id = str(uuid4())
+    await asyncio.to_thread(db.register_worker, settings, worker_id)
+
+    async def report_heartbeat():
+        while not stop.is_set():
+            try:
+                await asyncio.wait_for(stop.wait(), timeout=settings.worker_heartbeat_seconds)
+            except TimeoutError:
+                try:
+                    await asyncio.to_thread(db.pulse_worker, settings, worker_id)
+                except Exception as exc:
+                    logger.warning('worker_heartbeat_failed category=%s', type(exc).__name__)
+
     tasks = [asyncio.create_task(loop()) for _ in range(settings.concurrency)]
+    tasks.append(asyncio.create_task(report_heartbeat()))
     try:
         await stop.wait()
     finally:
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            await asyncio.to_thread(db.unregister_worker, settings, worker_id)
+        except Exception as exc:
+            # If storage is unavailable, the registration expires naturally.
+            logger.warning('worker_unregister_failed category=%s', type(exc).__name__)
 
 
 async def main():

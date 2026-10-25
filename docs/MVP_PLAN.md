@@ -13,6 +13,7 @@ One document workspace:
 - Original PDF: an Open/download PDF link.
 - Delete: remove the selected PDF, extracted data, edits, job, and comments after confirmation.
 - Failed extraction: a readable error and Retry button.
+- Worker availability: a warning when processing is unavailable; uploads and existing document review remain available.
 
 Other documents remain usable while processing continues. Editing becomes available once extraction finishes. An explicit save avoids unnecessary autosave complexity.
 
@@ -21,6 +22,7 @@ Other documents remain usable while processing continues. Editing becomes availa
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/documents` | Upload one PDF, persist it, queue extraction, return `202` with its document ID |
+| `GET /api/worker-status` | Report whether a worker heartbeat is recent |
 | `GET /api/documents` | List documents and processing summaries |
 | `GET /api/documents/{id}` | Get results, original extracted values, status, and comments |
 | `PATCH /api/documents/{id}` | Save reviewed project ID and project name |
@@ -31,13 +33,14 @@ Other documents remain usable while processing continues. Editing becomes availa
 
 The browser sends one upload request per selected file, with bounded upload concurrency. A failed file does not undo successful uploads.
 
-## SQLite: three tables
+## SQLite: four tables
 
 | Table | Stores |
 |---|---|
 | `documents` | Internal ID, original filename, storage key, size/page count, original AI values, current editable values, revision, and timestamps |
 | `extraction_jobs` | Document reference, queued/processing/completed/failed state, processing phase, attempts, progress, error, claim/lease information, and timestamps |
 | `comments` | Comment ID, document reference, text, and creation time |
+| `worker_heartbeats` | Process registration and last heartbeat time, independent of job leases |
 
 The internal document ID is separate from the Project ID extracted from the PDF.
 

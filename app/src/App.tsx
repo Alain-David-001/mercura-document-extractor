@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 import { request } from "./api";
-import type { DocumentDetail, DocumentRecord } from "./api";
+import type { DocumentDetail, DocumentRecord, WorkerAvailability } from "./api";
 import { formatSize, messageOf } from "./utils";
 import Icon from "./components/Icon";
 import Status from "./components/Status";
@@ -13,6 +13,7 @@ function App() {
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DocumentDetail | null>(null);
+  const [workerAvailable, setWorkerAvailable] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -32,8 +33,12 @@ function App() {
 
   const refresh = useCallback(async () => {
     const version = generation.current;
-    const list = await request<DocumentRecord[]>("/documents");
+    const [list, worker] = await Promise.all([
+      request<DocumentRecord[]>("/documents"),
+      request<WorkerAvailability>("/worker-status"),
+    ]);
     if (version !== generation.current) return;
+    setWorkerAvailable(worker.available);
     setDocuments(list);
     const id = list.some((doc) => doc.id === selection.current)
       ? selection.current
@@ -225,6 +230,15 @@ function App() {
             <span>
               {error} Your edits remain on screen; the connection will retry
               automatically.
+            </span>
+          </div>
+        )}
+        {!error && workerAvailable === false && (
+          <div className="notice warning" role="status">
+            <Icon name="alert" />
+            <span>
+              Processing unavailable. Uploads are saved and will run when the
+              worker reconnects.
             </span>
           </div>
         )}

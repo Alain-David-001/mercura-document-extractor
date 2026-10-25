@@ -15,6 +15,8 @@ class Settings:
     lease_seconds: int = 90
     max_attempts: int = 3
     poll_seconds: float = 1.0
+    worker_heartbeat_seconds: float = 5.0
+    worker_stale_seconds: float = 20.0
     model: str = "gemini-2.5-flash-lite"
 
     @property

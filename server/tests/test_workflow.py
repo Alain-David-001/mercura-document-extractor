@@ -370,3 +370,75 @@ def test_delete_during_extraction_rejects_stale_worker(client, settings):
         with pytest.raises(db.LostClaim):
             stale_update()
     assert not list(settings.data_dir.glob('job-*'))
+
+
+def test_worker_status_missing_fresh_stale_and_recovered(client, settings, monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(db.time, 'time', lambda: now[0])
+    assert client.get('/api/worker-status').json() == {'available': False, 'last_seen_at': None}
+    db.register_worker(settings, 'worker-a')
+    fresh = client.get('/api/worker-status').json()
+    assert fresh['available'] is True
+    assert fresh['last_seen_at'] is not None
+    now[0] += settings.worker_stale_seconds + 1
+    stale = client.get('/api/worker-status').json()
+    assert stale['available'] is False
+    assert stale['last_seen_at'] == fresh['last_seen_at']
+    assert client.get('/health').json() == {'status': 'ok'}
+    db.pulse_worker(settings, 'worker-a')
+    assert client.get('/api/worker-status').json()['available'] is True
+    db.unregister_worker(settings, 'worker-a')
+    # A late pulse cannot resurrect a worker after shutdown.
+    db.pulse_worker(settings, 'worker-a')
+    assert client.get('/api/worker-status').json()['available'] is False
+
+
+def test_worker_status_tracks_processes_independently(client, settings, monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(db.time, 'time', lambda: now[0])
+    db.register_worker(settings, 'worker-a')
+    db.register_worker(settings, 'worker-b')
+    db.unregister_worker(settings, 'worker-a')
+    assert client.get('/api/worker-status').json()['available'] is True
+    now[0] += settings.worker_stale_seconds + 1
+    assert client.get('/api/worker-status').json()['available'] is False
+
+
+@pytest.mark.parametrize('busy', [False, True])
+def test_worker_reports_heartbeat_while_idle_or_extracting(client, settings, monkeypatch, busy):
+    settings = replace(settings, worker_heartbeat_seconds=0.01)
+    if busy:
+        upload(client)
+
+    async def scenario():
+        loop = asyncio.get_running_loop()
+        pulsed = asyncio.Event()
+        release = asyncio.Event()
+        active = threading.Event()
+        original_pulse = db.pulse_worker
+
+        def observe_pulse(*args):
+            original_pulse(*args)
+            if not busy or active.is_set():
+                loop.call_soon_threadsafe(pulsed.set)
+
+        monkeypatch.setattr(db, 'pulse_worker', observe_pulse)
+
+        class WaitingExtractor:
+            async def extract(self, *args):
+                active.set()
+                await release.wait()
+                return Metadata(project_id='heartbeat-test')
+
+        stop = asyncio.Event()
+        task = asyncio.create_task(run(settings, WaitingExtractor(), stop))
+        try:
+            await asyncio.wait_for(pulsed.wait(), timeout=3)
+            assert db.worker_availability(settings)['available'] is True
+        finally:
+            release.set()
+            stop.set()
+            await asyncio.wait_for(task, timeout=3)
+        assert db.worker_availability(settings)['available'] is False
+
+    asyncio.run(scenario())
