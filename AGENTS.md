@@ -11,6 +11,7 @@ The deliverable should demonstrate full-stack understanding, maintainable code, 
 - Read `ASSIGNMENT.md` for the original requirements and `README.md` for setup. Inspect the code and Git history for current implementation state.
 - The supplied stack is React/Vite/TypeScript and FastAPI/Python. Example PDFs are scanned documents; do not rely on embedded text being available.
 - Read `docs/ARCHITECTURE.md` for the agreed MVP direction, both diagrams, and implementation boundaries. The target architecture is not yet implemented; discuss significant departures and keep that document current as details are decided.
+- Read `docs/MVP_PLAN.md` for the concrete UI, API, database, file storage, worker, and verification proposal discussed with Alain.
 - Keep dependencies local to `.venv` and `app/node_modules`. Keep API keys in ignored environment files and out of source, logs, and commits.
 - Make small, coherent progress commits. Verify relevant behavior and clearly distinguish implemented functionality from planned work.
 - Keep this guide focused on durable goals and conventions; put detailed architecture and progress notes in separate documents when needed.
