@@ -157,13 +157,6 @@ function App() {
     setDragging(false);
     if (!uploading) void upload(event.dataTransfer.files);
   }
-  const ready = documents.filter(
-    (doc) => doc.job.status === "completed",
-  ).length;
-  const pending = documents.filter((doc) =>
-    ["processing", "queued"].includes(doc.job.status),
-  ).length;
-  const failed = documents.filter((doc) => doc.job.status === "failed").length;
   const visible = documents.filter((doc) =>
     `${doc.filename} ${doc.project_id || ""} ${doc.project_name || ""}`
       .toLowerCase()
@@ -172,76 +165,15 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="Mercura home">
-          <span className="brand-mark">
-            m<span />
-          </span>
-          mercura<span className="brand-period">.</span>
-        </a>
-        <div className="workspace-label">WORKSPACE</div>
-        <div className="nav-item">
-          <Icon name="file" /> Documents <span>{documents.length}</span>
-        </div>
-        <div className="sidebar-bottom">
-          <div className="workspace-icon">M</div>
-          <div>
-            <strong>Project workspace</strong>
-            <span>Construction intelligence</span>
-          </div>
-        </div>
-      </aside>
       <main className="main-content">
         <header className="page-header">
-          <div>
-            <div className="breadcrumb">
-              Workspace <span>/</span> Documents
-            </div>
-            <h1>
-              From specifications
-              <br className="mobile-break" /> to project clarity<span>.</span>
-            </h1>
-            <p>
-              Extract the essentials. Review the details. Keep everyone in
-              context.
-            </p>
-          </div>
-          <div className="header-label">
-            <span /> DOCUMENT INTELLIGENCE
-          </div>
+          <a className="brand" href="/" aria-label="Mercura home">
+            mercura.
+          </a>
+          <h1>
+            Documents <span className="count-badge">{documents.length}</span>
+          </h1>
         </header>
-        <div className="stats-row">
-          <div>
-            <span className="stat-icon">
-              <Icon name="file" />
-            </span>
-            <strong>{documents.length}</strong>
-            <span>Total documents</span>
-          </div>
-          <div>
-            <span className="stat-icon ready-icon">
-              <Icon name="check" />
-            </span>
-            <strong>{ready}</strong>
-            <span>Ready to review</span>
-          </div>
-          <div>
-            <span className="stat-icon">
-              <Icon name="clock" />
-            </span>
-            <strong>{pending}</strong>
-            <span>In progress</span>
-          </div>
-          {failed > 0 && (
-            <div>
-              <span className="stat-icon failed-icon">
-                <Icon name="alert" />
-              </span>
-              <strong>{failed}</strong>
-              <span>Need attention</span>
-            </div>
-          )}
-        </div>
         {error && (
           <div className="notice error" role="alert">
             <Icon name="alert" />
@@ -264,24 +196,9 @@ function App() {
           }}
           onDrop={drop}
         >
-          <div className="upload-symbol">
-            <Icon name="upload" size={25} />
-          </div>
           <div className="upload-copy">
-            <h2>
-              {uploading
-                ? `Uploading ${uploading} ${uploading === 1 ? "document" : "documents"}…`
-                : "Bring your specifications into focus"}
-            </h2>
-            <p>
-              {uploading
-                ? "Files are saved and queued independently. You can keep reviewing below."
-                : "Drop PDFs here, or choose files. We’ll take care of the extraction."}
-            </p>
-            <span>
-              PDF only · Up to 100 MB and 5,000 pages per file · Multiple files
-              welcome
-            </span>
+            <p>{uploading ? `Uploading ${uploading}…` : "Drop PDFs here"}</p>
+            <span>100 MB · 5,000 pages per file</span>
           </div>
           <button
             className="button primary"
@@ -318,14 +235,6 @@ function App() {
             </button>
           </div>
         )}
-        <div className="workspace-heading">
-          <h2>
-            Your documents <span>{documents.length}</span>
-          </h2>
-          <span className="live-note">
-            <span /> Status updates automatically
-          </span>
-        </div>
         <div className="workspace-grid">
           <section className="document-list" aria-label="Documents">
             <div className="search-wrap">
@@ -339,7 +248,7 @@ function App() {
             </div>
             <div className="list-items">
               {loading ? (
-                <div className="list-placeholder">Loading your documents…</div>
+                <div className="list-placeholder">Loading…</div>
               ) : visible.length ? (
                 visible.map((doc) => (
                   <button
@@ -378,18 +287,14 @@ function App() {
               ) : (
                 <div className="list-placeholder">
                   <Icon name="file" size={30} />
-                  <strong>{filter ? "No matches" : "A clean slate"}</strong>
+                  <strong>{filter ? "No matches" : "No documents"}</strong>
                   <p>
                     {filter
                       ? "Try a different filename or project."
-                      : "Your uploaded specifications will appear here."}
+                      : "Upload a PDF to get started."}
                   </p>
                 </div>
               )}
-            </div>
-            <div className="list-footer">
-              {visible.length} {visible.length === 1 ? "document" : "documents"}
-              {filter ? " matching your search" : " in your workspace"}
             </div>
           </section>
           {selectedId && detail?.id === selectedId ? (
@@ -402,42 +307,14 @@ function App() {
             />
           ) : (
             <section className="empty-detail">
-              <div className="empty-illustration">
-                <Icon name="file" size={45} />
-                <span>
-                  <Icon name="check" size={16} />
-                </span>
-              </div>
-              <div className="eyebrow">LESS SEARCHING. MORE BUILDING.</div>
-              <h2>
-                {selectedId
-                  ? "Opening your document…"
-                  : "The details, without the digging."}
-              </h2>
               <p>
-                Upload a construction specification to extract its project
-                information. Review, refine, and leave notes in one place.
+                {selectedId
+                  ? "Opening document…"
+                  : "Select a document to review."}
               </p>
-              <div className="empty-steps">
-                <span>
-                  01 <strong>Upload</strong>
-                </span>
-                <span>
-                  02 <strong>Extract</strong>
-                </span>
-                <span>
-                  03 <strong>Review</strong>
-                </span>
-              </div>
             </section>
           )}
         </div>
-        <footer className="page-footer">
-          <span>Built for the details that matter.</span>
-          <span>
-            Powered by Gemini · Always review AI-extracted information
-          </span>
-        </footer>
       </main>
     </div>
   );

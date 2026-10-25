@@ -72,7 +72,7 @@ export default function MetadataEditor({
         value={projectId}
         maxLength={200}
         disabled={saving}
-        placeholder="Not found — enter a project ID"
+        placeholder="Not found"
         onChange={(event) => {
           setProjectId(event.target.value);
           drafts.set(doc.id, {
@@ -90,7 +90,7 @@ export default function MetadataEditor({
         value={projectName}
         maxLength={1000}
         disabled={saving}
-        placeholder="Not found — enter a project name"
+        placeholder="Not found"
         onChange={(event) => {
           setProjectName(event.target.value);
           drafts.set(doc.id, {
@@ -125,11 +125,7 @@ export default function MetadataEditor({
       )}
       <div className="form-footer">
         <span className={saved ? "saved-note" : "muted"} role="status">
-          {saved
-            ? "Changes saved"
-            : dirty
-              ? "Unsaved changes"
-              : "Review the extracted values before using them."}
+          {saved ? "Changes saved" : dirty ? "Unsaved changes" : ""}
         </span>
         <button className="button primary" disabled={!dirty || saving}>
           {saving ? "Saving…" : "Save changes"}

@@ -4,7 +4,6 @@ import { jsonBody, request } from "../api";
 import type { DocumentDetail } from "../api";
 import { formatDate, formatSize, messageOf } from "../utils";
 import Icon from "./Icon";
-import Status from "./Status";
 import MetadataEditor from "./MetadataEditor";
 import type { MetadataDraft } from "./MetadataEditor";
 
@@ -60,7 +59,6 @@ export default function DocumentPanel({
   return (
     <article className="detail-panel">
       <header className="detail-header">
-        <div className="eyebrow">DOCUMENT REVIEW</div>
         <div className="detail-title">
           <h2>{doc.filename}</h2>
           <a
@@ -77,13 +75,11 @@ export default function DocumentPanel({
             {doc.page_count} {doc.page_count === 1 ? "page" : "pages"}
           </span>
           <span>{formatSize(doc.size_bytes)}</span>
-          <span>Added {formatDate(doc.created_at)}</span>
         </div>
       </header>
       <div className="detail-body">
         <div className="section-heading">
           <h3>Project details</h3>
-          <Status doc={doc} />
         </div>
         {job.status === "completed" ? (
           <>
@@ -117,18 +113,12 @@ export default function DocumentPanel({
                 : job.status === "queued"
                   ? job.phase === "retry_wait"
                     ? "Waiting to retry"
-                    : "Your document is in the queue"
+                    : "Queued"
                   : job.phase === "preparing"
-                    ? "Preparing your PDF"
-                    : "Finding the project details"}
+                    ? "Preparing PDF"
+                    : "Extracting project details"}
             </h4>
-            <p>
-              {job.status === "failed"
-                ? job.error
-                : job.status === "queued"
-                  ? "The worker will pick it up automatically. You can keep uploading and reviewing other documents."
-                  : "Gemini is reading your document. Results will appear here automatically."}
-            </p>
+            {job.status === "failed" && <p>{job.error}</p>}
             {job.total_chunks > 0 && (
               <div className="chunk-progress">
                 <progress
@@ -162,11 +152,7 @@ export default function DocumentPanel({
               <span className="count-badge">{doc.comments.length}</span>
             </h3>
           </div>
-          {doc.comments.length === 0 ? (
-            <p className="empty-comments">
-              Keep review notes and context together with the document.
-            </p>
-          ) : (
+          {doc.comments.length > 0 && (
             <ol className="comment-list">
               {doc.comments.map((item) => (
                 <li key={item.id}>
@@ -188,7 +174,7 @@ export default function DocumentPanel({
             </label>
             <textarea
               id="new-comment"
-              placeholder="Add a note about this document…"
+              placeholder="Add a comment…"
               value={comment}
               disabled={commenting}
               maxLength={4000}
@@ -198,11 +184,9 @@ export default function DocumentPanel({
               }}
             />
             <div className="comment-footer">
-              <span className="muted">
-                {comment.length > 3500
-                  ? `${comment.length}/4000`
-                  : "Notes are saved with this document."}
-              </span>
+              {comment.length > 3500 && (
+                <span className="muted">{comment.length}/4000</span>
+              )}
               <button
                 className="button secondary"
                 disabled={!comment.trim() || commenting}
