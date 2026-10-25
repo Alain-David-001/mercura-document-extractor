@@ -34,7 +34,7 @@
   margin-left: -8px;
 }
 .workspace-label {
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1.7px;
   color: #92aaa5;
   margin: 57px 12px 14px;
@@ -47,7 +47,7 @@
   align-items: center;
   border-radius: 7px;
   padding: 12px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
 }
 .nav-item > span {
@@ -55,7 +55,7 @@
   background: #415e57;
   padding: 0 7px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -78,10 +78,10 @@
 .sidebar-bottom strong,
 .sidebar-bottom span {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
 }
 .sidebar-bottom span {
-  font-size: 10px;
+  font-size: 14px;
   color: #98b0aa;
   margin-top: 3px;
 }
@@ -97,8 +97,8 @@
   gap: 20px;
 }
 .breadcrumb {
-  font-size: 11px;
-  color: #7b8884;
+  font-size: 14px;
+  color: var(--text-secondary);
   display: flex;
   gap: 11px;
   margin-bottom: 22px;
@@ -116,14 +116,14 @@ h1 > span {
   color: #6e9a79;
 }
 .page-header p {
-  color: #7b8580;
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: 15px;
   margin-top: 11px;
 }
 .header-label {
   align-self: center;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   color: #71837b;
   display: flex;
@@ -143,7 +143,8 @@ h1 > span {
 }
 .stats-row {
   display: flex;
-  gap: 0;
+  flex-wrap: wrap;
+  gap: 14px 0;
   padding: 25px 0;
   margin: 10px 0 4px;
 }
@@ -165,8 +166,8 @@ h1 > span {
   font-weight: 600;
 }
 .stats-row > div > span:last-child {
-  font-size: 11px;
-  color: #7b8780;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .stat-icon {
   color: #73877f;
@@ -214,14 +215,14 @@ h1 > span {
   font-weight: 600;
 }
 .upload-copy p {
-  font-size: 12px;
-  color: #758478;
+  font-size: 14px;
+  color: var(--text-secondary);
   margin-top: 3px;
 }
 .upload-copy > span {
   display: block;
-  font-size: 10px;
-  color: #8a9689;
+  font-size: 14px;
+  color: var(--text-secondary);
   margin-top: 8px;
 }
 .button {
@@ -232,11 +233,11 @@ h1 > span {
   justify-content: center;
   gap: 8px;
   padding: 10px 15px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  min-height: 38px;
+  min-height: 42px;
   transition: background 0.15s;
 }
 .button.primary {
@@ -256,11 +257,13 @@ h1 > span {
 }
 .button.small {
   padding: 7px 10px;
-  min-height: 32px;
-  font-size: 10px;
+  min-height: 38px;
+  font-size: 14px;
 }
 .workspace-heading {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
   margin: 31px 0 15px;
@@ -271,9 +274,9 @@ h1 > span {
   letter-spacing: -0.35px;
 }
 .workspace-heading h2 > span {
-  font-size: 10px;
+  font-size: 14px;
   background: #e8ece6;
-  color: #7a887d;
+  color: var(--text-secondary);
   border-radius: 5px;
   padding: 2px 6px;
   vertical-align: middle;
@@ -283,8 +286,8 @@ h1 > span {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: 10px;
-  color: #8a958c;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .workspace-grid {
   display: grid;
@@ -308,11 +311,11 @@ h1 > span {
   border: 1px solid #e6eae2;
   border-radius: 6px;
   padding: 10px 11px;
-  font-size: 11px;
+  font-size: 16px;
   color: #284538;
 }
 .search-wrap input::placeholder {
-  color: #8d998d;
+  color: var(--text-secondary);
 }
 .list-items {
   max-height: 670px;
@@ -359,7 +362,7 @@ h1 > span {
 }
 .document-top strong {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -367,8 +370,8 @@ h1 > span {
   max-width: 100%;
 }
 .document-top > div > span {
-  font-size: 10px;
-  color: #8c968b;
+  font-size: 14px;
+  color: var(--text-secondary);
   display: block;
   margin-top: 5px;
 }
@@ -378,17 +381,18 @@ h1 > span {
 }
 .document-bottom {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   margin-top: 13px;
   gap: 4px;
 }
 .document-bottom > span:last-child {
-  font-size: 9px;
-  color: #929c90;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .status {
-  font-size: 9px;
+  font-size: 14px;
   border-radius: 5px;
   padding: 4px 7px;
   display: inline-flex;
@@ -405,26 +409,26 @@ h1 > span {
 }
 .status.completed {
   background: #e5eee1;
-  color: #52764b;
+  color: #42633c;
 }
 .status.processing {
   background: #f2eddb;
-  color: #94793a;
+  color: #796025;
 }
 .status.queued {
   background: #eef0ed;
-  color: #7e897d;
+  color: #566452;
 }
 .status.failed {
   background: #f7e9e3;
-  color: #a46449;
+  color: #8e4f35;
 }
 .status.processing .status-dot {
   animation: pulse 1.4s infinite;
 }
 .list-footer {
-  font-size: 9px;
-  color: #99a090;
+  font-size: 14px;
+  color: var(--text-secondary);
   padding: 12px 16px;
   border-top: 1px solid #edf0e8;
   background: #fbfcfa;
@@ -437,12 +441,12 @@ h1 > span {
   justify-content: center;
   text-align: center;
   padding: 25px;
-  color: #95a18f;
+  color: var(--text-secondary);
   gap: 12px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .list-placeholder p {
-  font-size: 11px;
+  font-size: 14px;
   max-width: 170px;
 }
 .list-placeholder strong {
@@ -461,10 +465,10 @@ h1 > span {
   border-bottom: 1px solid #edf0eb;
 }
 .eyebrow {
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 1.7px;
-  color: #8c9a86;
+  color: var(--text-secondary);
 }
 .detail-title {
   display: flex;
@@ -483,8 +487,8 @@ h1 > span {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 9px;
-  color: #939d8e;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .file-meta span + span::before {
   content: "·";
@@ -502,7 +506,7 @@ h1 > span {
   margin-bottom: 18px;
 }
 .section-heading h3 {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -510,7 +514,7 @@ h1 > span {
 }
 .metadata-form label {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   color: #697c65;
   margin-bottom: 7px;
   font-weight: 500;
@@ -522,12 +526,12 @@ h1 > span {
   border: 1px solid #dfe5d9;
   border-radius: 6px;
   margin-bottom: 18px;
-  font-size: 12px;
+  font-size: 16px;
   color: #263d29;
   background: #fcfdfa;
 }
 .metadata-form input::placeholder {
-  color: #a1a99a;
+  color: #687563;
 }
 .form-footer,
 .comment-footer {
@@ -537,17 +541,17 @@ h1 > span {
   gap: 12px;
 }
 .muted {
-  font-size: 10px;
-  color: #909b88;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .saved-note {
-  font-size: 11px;
+  font-size: 14px;
   color: #4f8054;
 }
 .original-values {
   margin-top: 20px;
-  color: #8b9782;
-  font-size: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 .original-values summary {
   cursor: pointer;
@@ -557,7 +561,7 @@ h1 > span {
   border-radius: 5px;
   padding: 12px;
   display: grid;
-  grid-template-columns: 85px 1fr;
+  grid-template-columns: 110px minmax(0, 1fr);
   gap: 8px;
   margin-bottom: 0;
 }
@@ -572,15 +576,15 @@ h1 > span {
   padding-top: 22px;
 }
 .count-badge {
-  font-size: 9px;
+  font-size: 14px;
   padding: 1px 5px;
   background: #f0f3eb;
   border-radius: 4px;
-  color: #8a987d;
+  color: var(--text-secondary);
 }
 .empty-comments {
-  font-size: 11px;
-  color: #909c87;
+  font-size: 14px;
+  color: var(--text-secondary);
   margin: 5px 0 18px;
 }
 .comments-section textarea {
@@ -591,12 +595,12 @@ h1 > span {
   padding: 12px;
   border: 1px solid #dfe5d8;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 16px;
   background: #fcfdfa;
   color: #29402b;
 }
 .comments-section textarea::placeholder {
-  color: #a0ab94;
+  color: #687563;
 }
 .comment-footer {
   margin-top: 10px;
@@ -617,9 +621,10 @@ h1 > span {
 }
 .comment-top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 7px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .comment-top strong {
   font-weight: 500;
@@ -627,8 +632,8 @@ h1 > span {
 }
 .comment-top time {
   margin-left: auto;
-  font-size: 9px;
-  color: #9aa68e;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .avatar {
   width: 23px;
@@ -638,12 +643,12 @@ h1 > span {
   display: grid;
   place-items: center;
   color: #708761;
-  font-size: 10px;
+  font-size: 14px;
 }
 .comment-list p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.7;
   color: #5a6e51;
   margin: 8px 0 0 30px;
@@ -694,15 +699,15 @@ h1 > span {
 }
 .empty-detail p {
   max-width: 330px;
-  color: #909d84;
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
   line-height: 1.8;
 }
 .empty-steps {
   display: flex;
   gap: 30px;
-  font-size: 10px;
-  color: #a2b093;
+  font-size: 14px;
+  color: var(--text-secondary);
   margin-top: 30px;
 }
 .empty-steps strong {
@@ -714,8 +719,8 @@ h1 > span {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  color: #99a28f;
-  font-size: 9px;
+  color: var(--text-secondary);
+  font-size: 14px;
   margin: 26px 0 0;
 }
 .notice {
@@ -724,7 +729,7 @@ h1 > span {
   gap: 10px;
   padding: 13px 15px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 14px;
   margin-bottom: 17px;
   white-space: pre-line;
   overflow-wrap: anywhere;
@@ -757,7 +762,7 @@ h1 > span {
   display: flex;
 }
 .inline-error {
-  font-size: 11px;
+  font-size: 14px;
   color: #a35b41;
   margin: 10px 0;
 }
@@ -787,8 +792,8 @@ h1 > span {
   margin-bottom: 8px;
 }
 .processing-card p {
-  font-size: 11px;
-  color: #8a987a;
+  font-size: 14px;
+  color: var(--text-secondary);
   line-height: 1.8;
   max-width: 340px;
   margin: 0 auto;
@@ -809,8 +814,8 @@ h1 > span {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: 10px;
-  color: #8c997b;
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 .chunk-progress progress {
   width: 100%;
@@ -850,11 +855,16 @@ h1 > span {
     padding: 20px;
     gap: 13px;
   }
+  .nav-item {
+    gap: 8px;
+    padding: 10px 8px;
+    font-size: 14px;
+  }
   .upload-copy h2 {
-    font-size: 13px;
+    font-size: 15px;
   }
   .upload-copy p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .upload-symbol {
     display: none;
@@ -865,7 +875,7 @@ h1 > span {
     padding-right: 20px;
   }
   .stats-row > div > span:last-child {
-    font-size: 10px;
+    font-size: 14px;
   }
   .workspace-grid {
     gap: 14px;
@@ -928,7 +938,7 @@ h1 > span {
     gap: 7px;
   }
   .file-meta {
-    font-size: 8px;
+    font-size: 14px;
     gap: 5px;
   }
   .file-meta span + span::before {
@@ -950,7 +960,7 @@ h1 > span {
     padding-right: 15px;
   }
   .stats-row > div > span:last-child {
-    font-size: 9px;
+    font-size: 14px;
   }
   .upload-zone {
     flex-wrap: wrap;
@@ -984,7 +994,7 @@ h1 > span {
   }
   .nav-item {
     margin: 0;
-    font-size: 11px;
+    font-size: 14px;
     gap: 7px;
     padding: 6px 10px;
   }
@@ -1007,17 +1017,20 @@ h1 > span {
     letter-spacing: -1px;
   }
   .page-header p {
-    font-size: 12px;
+    font-size: 14px;
     max-width: 280px;
     line-height: 1.7;
   }
   .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding: 20px 0;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 0;
   }
   .stats-row > div {
+    flex-wrap: wrap;
+    align-content: start;
     border: 0;
     padding: 0;
     margin: 0;
@@ -1030,7 +1043,8 @@ h1 > span {
     width: 17px;
   }
   .stats-row > div > span:last-child {
-    font-size: 9px;
+    flex-basis: 100%;
+    font-size: 14px;
   }
   .upload-zone {
     padding: 18px;
@@ -1039,10 +1053,10 @@ h1 > span {
     font-size: 14px;
   }
   .upload-copy p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .upload-copy > span {
-    font-size: 9px;
+    font-size: 14px;
   }
   .upload-zone > .button {
     width: 100%;
@@ -1055,7 +1069,7 @@ h1 > span {
     margin-top: 25px;
   }
   .live-note {
-    font-size: 8px;
+    font-size: 14px;
   }
   .workspace-heading h2 {
     font-size: 15px;
@@ -1085,7 +1099,7 @@ h1 > span {
     font-size: 16px;
   }
   .file-meta {
-    font-size: 9px;
+    font-size: 14px;
     gap: 9px;
   }
   .form-footer {
@@ -1100,7 +1114,7 @@ h1 > span {
     align-items: center;
   }
   .comment-footer .muted {
-    font-size: 9px;
+    font-size: 14px;
     max-width: 150px;
   }
   .page-footer {
@@ -1115,7 +1129,7 @@ h1 > span {
     font-size: 19px;
   }
   .notice {
-    font-size: 10px;
+    font-size: 14px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
