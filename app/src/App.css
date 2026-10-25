@@ -59,6 +59,7 @@
 }
 .upload-copy {
   flex: 1;
+  min-width: 0;
 }
 .upload-copy p {
   font-size: 14px;
@@ -637,9 +638,6 @@
   .comment-footer > .button {
     align-self: flex-end;
   }
-  .upload-copy {
-    min-width: 220px;
-  }
 }
 @media (max-width: 700px) {
   .upload-copy p {
@@ -720,14 +718,16 @@
   .upload-zone {
     padding: 14px;
     gap: 12px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     margin-bottom: 20px;
   }
   .upload-copy {
-    min-width: 160px;
+    flex: initial;
   }
   .upload-zone > .button {
-    margin-left: auto;
+    width: 100%;
+    min-height: 44px;
   }
 }
 
