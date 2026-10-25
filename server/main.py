@@ -31,9 +31,13 @@ def upload_to_gemini():
 
     try:
         filepath = pathlib.Path(pdf_path)
-        prompt = "example prompt"
+        prompt = (
+            "Extract the project ID and project name from this construction specification. "
+            "Return JSON with project_id and project_name. Use null for missing values. "
+            "Do not confuse the project ID with a specification or LV number."
+        )
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite-preview-06-17",
+            model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
             contents=[
                 types.Part.from_bytes(
                     data=filepath.read_bytes(),
