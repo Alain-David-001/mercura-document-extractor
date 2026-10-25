@@ -110,9 +110,11 @@
   display: grid;
   grid-template-columns: minmax(260px, 34%) minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 .document-list {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #e0e5dd;
   background: #fff;
   border-radius: 9px;
@@ -135,6 +137,7 @@
   color: var(--text-secondary);
 }
 .list-items {
+  flex: 1;
   max-height: 670px;
   overflow: auto;
   min-height: 320px;
@@ -649,6 +652,7 @@
     grid-template-columns: 1fr;
   }
   .list-items {
+    flex: initial;
     min-height: 0;
     max-height: 270px;
   }
@@ -692,7 +696,7 @@
     max-width: 150px;
   }
   .empty-detail {
-    min-height: 330px;
+    min-height: 180px;
   }
   .notice {
     font-size: 14px;
