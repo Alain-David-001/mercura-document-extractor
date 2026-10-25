@@ -4,7 +4,7 @@ Extract project IDs and names from construction specification PDFs with Google G
 
 React/TypeScript and FastAPI provide the workspace and API. A separate worker processes a durable SQLite queue; original PDFs and results stay on local disk. Multiple uploads, processing states, retries, large-document chunking, and PDF access are included.
 
-[Assignment](ASSIGNMENT.md) · [Architecture and tradeoffs](docs/ARCHITECTURE.md) · [MVP plan](docs/MVP_PLAN.md) · [Agent guide](AGENTS.md)
+[Assignment](ASSIGNMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Implemented features](docs/MVP_PLAN.md) · [Agent guide](AGENTS.md)
 
 ## Setup
 
@@ -56,9 +56,9 @@ Set these in ignored `server/.env`:
 | `WORKER_CONCURRENCY` | `2`; configurable from `1` to `8` |
 | `DATA_DIR` | `server/data/`, resolved from the backend code location |
 
-PDF limits: 100 MiB and 5,000 pages per file; no password-protected PDFs. Chunks are at most 40 pages and 18 MiB. The queue accepts up to 200 pending/active uploads. One oversized page may require compression. Files, SQLite data, credentials, and temporary job files are local and excluded from Git; back up the data directory to retain your workspace.
+PDF limits: 100 MiB and 5,000 pages per file; no password-protected PDFs. Chunks are at most 40 pages and 18 MiB. The queue accepts up to 200 pending/active uploads. A single page exceeding the chunk byte limit is rejected. Files, SQLite data, credentials, and temporary job files are local and excluded from Git.
 
-This MVP is intended for a trusted local workspace. See the architecture document for restart recovery, extraction limitations, and the changes needed for a public deployment.
+The application has no authentication and stores data locally. See the architecture document for restart recovery, extraction behavior, and verification limits.
 
 ## Checks
 

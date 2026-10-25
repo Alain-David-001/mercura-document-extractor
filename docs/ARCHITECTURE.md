@@ -2,11 +2,11 @@
 
 ## Status
 
-The MVP implements this architecture: a React document workspace, FastAPI API, SQLite persistence, local PDF storage, and a separate configurable worker process. See the [MVP plan](MVP_PLAN.md) for the feature scope, Git history for progress, and the [README](../README.md) for setup.
+The MVP implements this architecture: a React document workspace, FastAPI API, SQLite persistence, local PDF storage, and a separate configurable worker process. See the [implemented features](MVP_PLAN.md) for the feature scope, Git history for progress, and the [README](../README.md) for setup.
 
 ## Overview
 
-The pool is shown as one component to keep the overview simple. It supports multiple concurrent processing loops, with two enabled by default.
+The worker pool supports multiple concurrent processing loops, with two enabled by default.
 
 ```mermaid
 flowchart LR
@@ -49,19 +49,18 @@ flowchart LR
 
 1. The UI communicates only with the API. It uploads PDFs, polls for updates, and submits edits and comments.
 2. The API validates and saves PDFs locally, creates durable queued jobs, and returns without waiting for extraction. Stored PDFs can later be downloaded through the API.
-3. Available workers periodically check for eligible jobs, preferring the oldest. Each job must be claimed atomically so concurrent workers cannot claim it together. Workers wait briefly when the queue is empty.
-4. A worker reads the PDF, prepares bounded chunks when necessary, calls Gemini, and persists results or errors. Blocking PDF preparation must not stall the other processing loops.
-5. The UI shows queued, preparing, extracting, completed, or failed states. Chunk completion can provide measurable progress; a pending Gemini request does not provide a reliable extraction percentage.
+3. Available workers periodically check for eligible jobs, preferring the oldest. Jobs are claimed atomically; concurrent workers cannot hold the same claim. Workers wait briefly when the queue is empty.
+4. A worker reads the PDF, prepares bounded chunks when necessary, calls Gemini, and persists results or errors. PDF preparation runs in a separate thread.
+5. The UI shows queued, preparing, extracting, completed, or failed states. Progress records completed chunks; a pending Gemini request shows its processing stage.
 6. Original AI extraction and user corrections are stored separately so retries or later processing cannot overwrite reviewed values. Comments are persisted with their document.
 
-## Reliability and tradeoffs
+## Queue recovery and worker availability
 
-- SQLite and local files keep the MVP easy to run on one machine. Queue operations use short transactions; database locks must not be held during Gemini calls.
+- SQLite stores document and job records; PDFs are stored locally. Queue operations use short transactions. Database transactions do not span Gemini calls.
 - Jobs use 90-second leases, renewed every 30 seconds. An expired claim is eligible for recovery on the next queue scan, up to three automatic attempts. Tokens and lease checks reject stale workers. Retryable provider errors use delayed retries; terminal failures expose an explicit retry action. A retry repeats the document from the beginning, so provider calls may be repeated after interruption.
-- Worker availability uses one heartbeat per process, independent of per-job lease renewal. The process registers at startup, updates its heartbeat every 5 seconds even while idle or awaiting Gemini, and unregisters on graceful shutdown. The API reports unavailable if no heartbeat is newer than 20 seconds; the UI polls this alongside document state and displays a warning. Hard termination is detected after expiry, plus the polling delay. Multiple processes have independent registrations. A recent heartbeat establishes process liveness, not Gemini availability or job progress. Automatic process restart remains a deployment responsibility.
-- Bound document concurrency, chunk sizes, and provider requests to control memory and API quota. Limit retries to transient failures and expose terminal errors clearly.
-- Scanned sample PDFs require visual document understanding. Embedded-text extraction alone is insufficient. Chunking must respect provider page, byte, and context limits; conflicting extracted metadata needs explicit handling.
-- Polling is sufficient for the MVP; updates arrive after a short delay. Authentication, shared object storage, a server database, and a dedicated queue are production extensions to evaluate when moving beyond a single trusted local deployment.
+- Worker availability uses one heartbeat per process, independent of per-job lease renewal. The process registers at startup, updates its heartbeat every 5 seconds even while idle or awaiting Gemini, and unregisters on graceful shutdown. The API reports unavailable if no heartbeat is newer than 20 seconds; the UI polls this alongside document state and displays a warning. Hard termination is detected after expiry, plus the polling delay. Multiple processes have independent registrations. A recent heartbeat establishes process liveness, not Gemini availability or job progress. The application does not automatically restart stopped processes.
+- The supplied samples are scanned PDFs. The worker sends PDF chunks to Gemini and flags conflicting extracted metadata.
+- The browser polls the API for document state and worker availability.
 
 ## Implementation map
 
@@ -71,15 +70,15 @@ flowchart LR
 - `server/worker.py`: separate asynchronous processing loops, off-thread PDF/database work, heartbeats, and document-scoped logs without raw provider errors or credentials.
 - `app/src/api.ts`, `app/src/App.tsx`, and `app/src/components/`: typed HTTP contracts, bounded parallel uploads, status polling, review forms, per-document drafts, and comments. Vite proxies API requests to FastAPI.
 
-## Practical limits and production extensions
+## Processing behavior and limits
 
-The API accepts one PDF per request; the browser uploads up to two files concurrently. Files are written with generated names before document/job records commit. Failed uploads are cleaned up, but a process crash between filesystem and database operations can leave an orphaned file. Forced worker termination can also leave temporary chunks. Document deletion removes its database records in one transaction, then unlinks its stored PDF. If unlinking fails or the API crashes between those steps, an orphaned file can remain; the API logs cleanup failures. A production deployment should reconcile these periodically. Deleting a queued job prevents it being claimed. Deleting an active job invalidates its claim: a Gemini request already in flight may finish, but its result is discarded and no further chunks are submitted. Worker temporary chunks are cleaned up when processing exits.
+The API accepts one PDF per request; the browser uploads up to two files concurrently. Files are written with generated names before document/job records commit. Failed uploads are cleaned up, but a process crash between filesystem and database operations can leave an orphaned file. Forced worker termination can also leave temporary chunks. Document deletion removes its database records in one transaction, then unlinks its stored PDF. If unlinking fails or the API crashes between those steps, an orphaned file can remain; the API logs cleanup failures. Deleting a queued job prevents it being claimed. Deleting an active job invalidates its claim: a Gemini request already in flight may finish, but its result is discarded and no further chunks are submitted. Worker temporary chunks are cleaned up when processing exits.
 
-Chunks are processed sequentially within a document. Every chunk is checked for metadata; the first nonempty value is selected deterministically and disagreements are flagged for human review. This favors full-document coverage over lowest latency/cost. Missing fields remain null. AI output still requires human verification; large scans with conflicting headers may need a more sophisticated reconciliation strategy.
+Chunks are processed sequentially within a document. Every chunk is checked for metadata; the first nonempty value is selected deterministically and disagreements are flagged for human review. Missing fields remain null. Extracted values can be reviewed and edited in the UI.
 
-The upload limit is checked before parsing when Content-Length is supplied and while copying the spooled upload. A public deployment needs an ingress body-size limit (including chunked requests), authentication, storage quotas, lifecycle policies, and hardened handling of untrusted files. Document listing is unpaginated for this local MVP; add indexed pagination and less frequent idle polling as workspace size grows. There is no user identity system: comments are workspace notes labelled “You.”
+The upload limit is checked before parsing when Content-Length is supplied and while copying the spooled upload. Document listing is unpaginated. There is no user identity system: comments are workspace notes labelled “You.”
 
-SQLite WAL and short transactions work for this local deployment; shared storage, a server database, durable chunk checkpoints, migrations, provider-wide quota management, and a dedicated queue should be evaluated before horizontal deployment.
+SQLite uses WAL mode. Chunk progress is recorded, but retries repeat the document from the beginning rather than resuming from a saved chunk.
 
 ## Verification
 

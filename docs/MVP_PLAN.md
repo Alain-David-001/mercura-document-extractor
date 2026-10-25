@@ -1,6 +1,6 @@
-# MVP implementation plan
+# Implemented MVP features
 
-This records the implemented MVP scope. See [the architecture](ARCHITECTURE.md) for the design, implementation notes, and verified limits.
+This records the implemented MVP scope. See [the architecture](ARCHITECTURE.md) for component structure, implemented behavior, and verification limits.
 
 ## UI
 
@@ -15,7 +15,7 @@ One document workspace:
 - Failed extraction: a readable error and Retry button.
 - Worker availability: a warning when processing is unavailable; uploads and existing document review remain available.
 
-Other documents remain usable while processing continues. Editing becomes available once extraction finishes. An explicit save avoids unnecessary autosave complexity.
+Other documents remain usable while processing continues. Editing becomes available once extraction finishes. Edits are persisted with the Save changes button.
 
 ## API
 
@@ -48,11 +48,11 @@ AI values remain available after edits. Revision checks prevent stale saves from
 
 ## PDF storage
 
-- Keep PDFs under ignored `server/data/uploads/`.
-- Use generated document IDs for stored filenames; retain the original filename in SQLite.
-- Validate PDF content and size, write through a temporary file, then finalize it.
-- Serve files through the API using the document record, rather than exposing arbitrary filesystem paths.
-- Store the database under ignored `server/data/` as well.
+- PDFs are stored under ignored `server/data/uploads/`.
+- Stored filenames use generated document IDs; SQLite retains the original filename.
+- The API validates PDF content and size, writes through a temporary file, then finalizes it.
+- The API serves files using the document record.
+- The database is stored under ignored `server/data/` as well.
 
 ## Worker
 
@@ -60,8 +60,8 @@ One separate worker process, configured for two active documents by default. The
 
 It atomically claims jobs, reads the stored PDF, requests schema-validated Gemini output, and persists results or failure. Expiring claims and heartbeats support recovery after interruption; stale attempts cannot overwrite newer results.
 
-For large PDFs, split into chunks bounded by pages and bytes, process chunks sequentially per document, and report completed chunks. Conflicting project metadata should be flagged for review. A pending Gemini call shows its stage, without a fabricated percentage.
+Large PDFs are split into chunks bounded by pages and bytes. Chunks are processed sequentially per document, with completed chunks recorded as progress. Conflicting project metadata is flagged for review. A pending Gemini call shows its processing stage.
 
-## Delivery checks
+## Verification
 
-Verify upload → extraction → edit → comment → restart persistence, malformed PDFs, provider failures, retry, and interrupted-job recovery. Run frontend build/lint and check the complete flow in the browser.
+Backend tests cover upload, extraction, edits, comments, restart persistence, malformed PDFs, provider failures, retry, and interrupted-job recovery. See the [architecture verification section](ARCHITECTURE.md#verification) for recorded browser checks and their limits. Commands for backend tests and frontend build/lint are in the [README](../README.md#checks).
