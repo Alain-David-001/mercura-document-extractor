@@ -18,4 +18,4 @@ The deliverable should demonstrate full-stack understanding, maintainable code, 
 
 ## Current working agreement
 
-Keep changes committed locally and defer pushing until the project is ready. The worker defaults to one active document; concurrency is configurable. Use the README for startup and tests, and the architecture document for tradeoffs and verification limits.
+Keep changes committed locally and defer pushing until the project is ready. The worker defaults to two active documents; concurrency is configurable. Use the README for startup and tests, and the architecture document for tradeoffs and verification limits.

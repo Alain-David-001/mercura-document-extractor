@@ -56,7 +56,7 @@ AI values remain available after edits. Revision checks prevent stale saves from
 
 ## Worker
 
-One separate worker process, initially configured for one active document. The processing limit remains configurable so we can verify two documents concurrently afterward.
+One separate worker process, configured for two active documents by default. The processing limit remains configurable from 1 to 8.
 
 It atomically claims jobs, reads the stored PDF, requests schema-validated Gemini output, and persists results or failure. Expiring claims and heartbeats support recovery after interruption; stale attempts cannot overwrite newer results.
 

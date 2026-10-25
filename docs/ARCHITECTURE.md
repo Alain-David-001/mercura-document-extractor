@@ -6,7 +6,7 @@ The MVP implements this architecture: a React document workspace, FastAPI API, S
 
 ## Overview
 
-The pool is shown as one component to keep the overview simple. It supports multiple concurrent processing loops, with one enabled by default.
+The pool is shown as one component to keep the overview simple. It supports multiple concurrent processing loops, with two enabled by default.
 
 ```mermaid
 flowchart LR
@@ -24,7 +24,7 @@ flowchart LR
 
 ## Worker detail
 
-One dedicated worker process runs one processing loop by default. Set `WORKER_CONCURRENCY=2` to use the two-loop configuration illustrated below. Concurrency is configurable from 1 to 8; these are logical workers inside the same process.
+One dedicated worker process runs two processing loops by default, as illustrated below. Set `WORKER_CONCURRENCY` to adjust the processing limit. Concurrency is configurable from 1 to 8; these are logical workers inside the same process.
 
 ```mermaid
 flowchart LR
@@ -32,7 +32,7 @@ flowchart LR
     API --> DB[("SQLite: documents, jobs, results, comments")]
     API --> Files[("Local PDF storage")]
 
-    subgraph Pool["Bounded worker pool — example configuration: 2 jobs"]
+    subgraph Pool["Bounded worker pool — default configuration: 2 jobs"]
         W1["Worker 1"]
         W2["Worker 2"]
     end

@@ -53,7 +53,7 @@ Set these in ignored `server/.env`:
 |---|---|
 | `GOOGLE_API_KEY` | Required for the worker |
 | `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
-| `WORKER_CONCURRENCY` | `1`; set to `2` for concurrent documents |
+| `WORKER_CONCURRENCY` | `2`; configurable from `1` to `8` |
 | `DATA_DIR` | `server/data/`, resolved from the backend code location |
 
 PDF limits: 100 MiB and 5,000 pages per file; no password-protected PDFs. Chunks are at most 40 pages and 18 MiB. The queue accepts up to 200 pending/active uploads. One oversized page may require compression. Files, SQLite data, credentials, and temporary job files are local and excluded from Git; back up the data directory to retain your workspace.

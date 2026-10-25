@@ -11,7 +11,7 @@ class Settings:
     max_pages: int = 5000
     chunk_pages: int = 40
     chunk_bytes: int = 18 * 1024 * 1024
-    concurrency: int = 1
+    concurrency: int = 2
     lease_seconds: int = 90
     max_attempts: int = 3
     poll_seconds: float = 1.0
@@ -31,6 +31,6 @@ class Settings:
     def from_env(cls):
         return cls(
             data_dir=Path(os.getenv("DATA_DIR", str(Path(__file__).parent / "data"))).resolve(),
-            concurrency=max(1, min(8, int(os.getenv("WORKER_CONCURRENCY", "1")))),
+            concurrency=max(1, min(8, int(os.getenv("WORKER_CONCURRENCY", "2")))),
             model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
         )
