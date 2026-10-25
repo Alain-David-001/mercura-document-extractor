@@ -711,3 +711,55 @@ h1 {
     margin-left: auto;
   }
 }
+
+.document-actions,
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.delete-button {
+  color: #9b3c30;
+}
+.confirm-dialog {
+  width: min(440px, calc(100% - 32px));
+  border: 1px solid #e0e5dd;
+  border-radius: 10px;
+  padding: 24px;
+  color: inherit;
+  background: #fff;
+}
+.confirm-dialog::backdrop {
+  background: rgb(19 47 48 / 40%);
+}
+.confirm-dialog h2 {
+  font-size: 20px;
+}
+.confirm-dialog p {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.dialog-actions {
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.button.danger {
+  background: #9b3c30;
+  color: #fff;
+}
+.button.danger:hover:not(:disabled) {
+  background: #7b2e25;
+}
+@media (max-width: 700px) {
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .page-header h1 {
+    font-size: 18px;
+  }
+  .detail-title {
+    flex-wrap: wrap;
+  }
+}

@@ -64,7 +64,7 @@ flowchart LR
 
 ## Implementation map
 
-- `server/main.py`: validated uploads, document APIs, optimistic edit revisions, comments, and PDF serving.
+- `server/main.py`: validated uploads, document APIs, optimistic edit revisions, comments, document deletion, and PDF serving.
 - `server/db.py`: schema, persistence, atomic claims, leases, retries, and stale-owner protection. Database transactions never span provider calls.
 - `server/processing.py`: PDF validation, page/byte-bounded chunks, Gemini Files API uploads, supported structured-output schema, strict local response validation, and conflict warnings. Remote files are deleted after each call on a best-effort basis.
 - `server/worker.py`: separate asynchronous processing loops, off-thread PDF/database work, heartbeats, and document-scoped logs without raw provider errors or credentials.
@@ -72,7 +72,7 @@ flowchart LR
 
 ## Practical limits and production extensions
 
-The API accepts one PDF per request; the browser uploads up to two files concurrently. Files are written with generated names before document/job records commit. Failed uploads are cleaned up, but a process crash between filesystem and database operations can leave an orphaned file. Forced worker termination can also leave temporary chunks. A production deployment should reconcile these periodically.
+The API accepts one PDF per request; the browser uploads up to two files concurrently. Files are written with generated names before document/job records commit. Failed uploads are cleaned up, but a process crash between filesystem and database operations can leave an orphaned file. Forced worker termination can also leave temporary chunks. Document deletion removes its database records in one transaction, then unlinks its stored PDF. If unlinking fails or the API crashes between those steps, an orphaned file can remain; the API logs cleanup failures. A production deployment should reconcile these periodically. Deleting a queued job prevents it being claimed. Deleting an active job invalidates its claim: a Gemini request already in flight may finish, but its result is discarded and no further chunks are submitted. Worker temporary chunks are cleaned up when processing exits.
 
 Chunks are processed sequentially within a document. Every chunk is checked for metadata; the first nonempty value is selected deterministically and disagreements are flagged for human review. This favors full-document coverage over lowest latency/cost. Missing fields remain null. AI output still requires human verification; large scans with conflicting headers may need a more sophisticated reconciliation strategy.
 
@@ -82,6 +82,8 @@ SQLite WAL and short transactions work for this local deployment; shared storage
 
 ## Verification
 
-Automated tests cover upload validation, extraction with a fake provider, edits and stale-save conflicts, comments, downloads, restart persistence, retry limits, lease recovery, stale workers, concurrent jobs, Gemini response validation/cleanup, conflict warnings, and a 1,001-page synthetic PDF processed in bounded chunks. The large-file test validates orchestration, not real Gemini accuracy or latency on thousands of scanned pages.
+Automated tests cover upload validation, extraction with a fake provider, edits and stale-save conflicts, comments, downloads, restart persistence, retry limits, lease recovery, stale workers, concurrent jobs, Gemini response validation/cleanup, conflict warnings, document deletion (including during an in-flight extraction), and a 1,001-page synthetic PDF processed in bounded chunks. The large-file test validates orchestration, not real Gemini accuracy or latency on thousands of scanned pages.
 
 Browser checks used the supplied scanned sample with the real Gemini service: upload, extraction, failure/retry, saved edits after reload, comments without losing a metadata draft, and mixed valid/invalid uploads. The desktop and default narrow layout were inspected. Additional browser interaction was declined during verification; per-document draft switching was reviewed in code but not completed as a browser check.
+
+The per-document Delete button and confirmation/cancellation were checked in the browser. Deletion and stale-worker rejection were verified with isolated backend tests; existing workspace documents were retained during this check.

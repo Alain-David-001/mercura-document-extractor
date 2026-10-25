@@ -150,3 +150,18 @@ def renew(settings, job):
         conn.execute("BEGIN IMMEDIATE")
         owned(conn, job)
         conn.execute("UPDATE extraction_jobs SET lease_until=? WHERE id=?", (time.time() + settings.lease_seconds, job['id']))
+
+
+def delete_document(settings, document_id):
+    """Remove one document atomically, invalidating outstanding worker claims."""
+    with connect(settings) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute("SELECT storage_key FROM documents WHERE id=?", (document_id,)).fetchone()
+        if row is None:
+            return None
+        conn.execute("DELETE FROM comments WHERE document_id=?", (document_id,))
+        conn.execute("DELETE FROM extraction_jobs WHERE document_id=?", (document_id,))
+        conn.execute("DELETE FROM documents WHERE id=?", (document_id,))
+    # Filesystem cleanup follows the commit: a stale extraction cannot restore
+    # deleted records. An interrupted/failed unlink may leave an orphaned file.
+    return row['storage_key']

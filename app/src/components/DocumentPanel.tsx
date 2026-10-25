@@ -10,11 +10,13 @@ import type { MetadataDraft } from "./MetadataEditor";
 export default function DocumentPanel({
   doc,
   onUpdated,
+  onDelete,
   drafts,
   commentDrafts,
 }: {
   doc: DocumentDetail;
   onUpdated: (doc: DocumentDetail) => void;
+  onDelete: () => void;
   drafts: Map<string, MetadataDraft>;
   commentDrafts: Map<string, string>;
 }) {
@@ -61,14 +63,22 @@ export default function DocumentPanel({
       <header className="detail-header">
         <div className="detail-title">
           <h2>{doc.filename}</h2>
-          <a
-            className="button secondary small"
-            href={`/api/documents/${doc.id}/file`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open PDF <Icon name="arrow" size={16} />
-          </a>
+          <div className="document-actions">
+            <a
+              className="button secondary small"
+              href={`/api/documents/${doc.id}/file`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open PDF <Icon name="arrow" size={16} />
+            </a>
+            <button
+              className="button secondary small delete-button"
+              onClick={onDelete}
+            >
+              Delete
+            </button>
+          </div>
         </div>
         <div className="file-meta">
           <span>

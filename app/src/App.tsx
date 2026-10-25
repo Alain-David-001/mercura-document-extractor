@@ -18,6 +18,10 @@ function App() {
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [uploading, setUploading] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DocumentRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const generation = useRef(0);
   const [filter, setFilter] = useState("");
   const input = useRef<HTMLInputElement>(null);
   const selection = useRef(selectedId);
@@ -27,16 +31,27 @@ function App() {
   selection.current = selectedId;
 
   const refresh = useCallback(async () => {
+    const version = generation.current;
     const list = await request<DocumentRecord[]>("/documents");
+    if (version !== generation.current) return;
     setDocuments(list);
-    const id = selection.current || list[0]?.id;
-    if (id && !selection.current) {
+    const id = list.some((doc) => doc.id === selection.current)
+      ? selection.current
+      : list[0]?.id || null;
+    if (id !== selection.current) {
       selection.current = id;
       setSelectedId(id);
+      setDetail(null);
     }
     if (id) {
-      const current = await request<DocumentDetail>(`/documents/${id}`);
-      if (selection.current === id)
+      const current = await request<DocumentDetail>(`/documents/${id}`).catch(
+        (error) => {
+          if (version !== generation.current) return null;
+          throw error;
+        },
+      );
+      if (!current) return;
+      if (selection.current === id && version === generation.current)
         setDetail((previous) =>
           previous?.id === id &&
           (previous.revision > current.revision ||
@@ -94,8 +109,34 @@ function App() {
     );
   }
 
+  async function removeDocument() {
+    if (!deleteTarget || activeUpload.current) return;
+    setDeleting(true);
+    setDeleteError("");
+    generation.current += 1;
+    const target = deleteTarget;
+    try {
+      await request(`/documents/${target.id}`, { method: "DELETE" });
+      generation.current += 1;
+      drafts.current.delete(target.id);
+      commentDrafts.current.delete(target.id);
+      if (selection.current === target.id) {
+        selection.current = null;
+        setSelectedId(null);
+        setDetail(null);
+      }
+      setDocuments((list) => list.filter((doc) => doc.id !== target.id));
+      setDeleteTarget(null);
+      await refresh().catch((error) => setError(messageOf(error)));
+    } catch (error) {
+      setDeleteError(messageOf(error));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function upload(files: FileList | File[]) {
-    if (activeUpload.current) return;
+    if (activeUpload.current || deleting) return;
     const queue = Array.from(files);
     if (!queue.length) return;
     activeUpload.current = true;
@@ -202,7 +243,7 @@ function App() {
           </div>
           <button
             className="button primary"
-            disabled={uploading > 0}
+            disabled={uploading > 0 || deleting}
             onClick={() => input.current?.click()}
           >
             <Icon name="upload" size={17} />
@@ -302,6 +343,10 @@ function App() {
               key={detail.id}
               doc={detail}
               onUpdated={updated}
+              onDelete={() => {
+                setDeleteError("");
+                setDeleteTarget(detail);
+              }}
               drafts={drafts.current}
               commentDrafts={commentDrafts.current}
             />
@@ -315,6 +360,49 @@ function App() {
             </section>
           )}
         </div>
+        {deleteTarget && (
+          <dialog
+            ref={(element) => {
+              if (element && !element.open) element.showModal();
+            }}
+            onCancel={(event) => {
+              event.preventDefault();
+              if (!deleting) setDeleteTarget(null);
+            }}
+            aria-modal="true"
+            aria-labelledby="delete-title"
+            aria-describedby="delete-description"
+            className="confirm-dialog"
+          >
+            <h2 id="delete-title">Delete document?</h2>
+            <p id="delete-description">
+              “{deleteTarget.filename}” and its extracted data, edits, and
+              comments will be permanently deleted.
+            </p>
+            {deleteError && (
+              <p className="inline-error" role="alert">
+                {deleteError}
+              </p>
+            )}
+            <div className="dialog-actions">
+              <button
+                autoFocus
+                className="button secondary"
+                disabled={deleting}
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="button danger"
+                disabled={deleting || uploading > 0}
+                onClick={() => void removeDocument()}
+              >
+                {deleting ? "Deleting…" : "Delete document"}
+              </button>
+            </div>
+          </dialog>
+        )}
       </main>
     </div>
   );

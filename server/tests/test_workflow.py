@@ -312,3 +312,61 @@ def test_thousand_page_document_uses_bounded_chunks(client, settings):
     assert doc['job']['status'] == 'completed'
     assert doc['job']['total_chunks'] == 26
     assert len(seen) == 26 and seen[0][0] == 1 and seen[-1][1] == 1001
+
+
+def test_delete_completed_document_removes_records_and_pdf(client, settings):
+    removed = upload(client, 'remove.pdf')
+    retained = upload(client, 'keep.pdf')
+    complete(settings)
+    client.post(f"/api/documents/{removed['id']}/comments", json={'text': 'Delete with document'})
+    with db.connect(settings) as conn:
+        key = conn.execute('SELECT storage_key FROM documents WHERE id=?', (removed['id'],)).fetchone()[0]
+    response = client.delete(f"/api/documents/{removed['id']}")
+    assert response.status_code == 204
+    assert not response.content
+    assert not (settings.uploads / key).exists()
+    assert client.get(f"/api/documents/{removed['id']}").status_code == 404
+    assert client.get(f"/api/documents/{removed['id']}/file").status_code == 404
+    assert client.post(f"/api/documents/{removed['id']}/retry").status_code == 404
+    assert [doc['id'] for doc in client.get('/api/documents').json()] == [retained['id']]
+    with db.connect(settings) as conn:
+        assert conn.execute('SELECT count(*) FROM comments WHERE document_id=?', (removed['id'],)).fetchone()[0] == 0
+        assert conn.execute('SELECT count(*) FROM extraction_jobs WHERE document_id=?', (removed['id'],)).fetchone()[0] == 0
+    with TestClient(create_app(settings)) as restarted:
+        assert restarted.get(f"/api/documents/{removed['id']}").status_code == 404
+
+
+def test_delete_queued_and_missing_document(client, settings):
+    doc = upload(client)
+    assert client.delete(f"/api/documents/{doc['id']}").status_code == 204
+    assert db.claim(settings) is None
+    assert client.get('/api/documents').json() == []
+    assert not list(settings.uploads.iterdir())
+    assert client.delete(f"/api/documents/{doc['id']}").status_code == 404
+
+
+def test_delete_during_extraction_rejects_stale_worker(client, settings):
+    doc = upload(client)
+    job = db.claim(settings)
+    assert job
+
+    class DeleteDuringExtraction:
+        calls = 0
+
+        async def extract(self, path, first_page, last_page):
+            self.calls += 1
+            assert client.delete(f"/api/documents/{doc['id']}").status_code == 204
+            return Metadata(project_id='late result', project_name='Must not return')
+
+    extractor = DeleteDuringExtraction()
+    asyncio.run(process_job(settings, job, extractor))
+    assert extractor.calls == 1
+    assert client.get('/api/documents').json() == []
+    for stale_update in (
+        lambda: db.renew(settings, job),
+        lambda: db.finish(settings, job, Metadata(project_id='stale')),
+        lambda: db.fail(settings, job, 'late failure', transient=True),
+    ):
+        with pytest.raises(db.LostClaim):
+            stale_update()
+    assert not list(settings.data_dir.glob('job-*'))

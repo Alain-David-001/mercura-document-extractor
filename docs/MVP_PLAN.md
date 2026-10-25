@@ -11,6 +11,7 @@ One document workspace:
 - Selected document panel: editable Project ID and Project Name, an explicit Save changes button, and confirmation or error feedback.
 - Comments: a persisted chronological list with a text box and Add comment button.
 - Original PDF: an Open/download PDF link.
+- Delete: remove the selected PDF, extracted data, edits, job, and comments after confirmation.
 - Failed extraction: a readable error and Retry button.
 
 Other documents remain usable while processing continues. Editing becomes available once extraction finishes. An explicit save avoids unnecessary autosave complexity.
@@ -25,6 +26,7 @@ Other documents remain usable while processing continues. Editing becomes availa
 | `PATCH /api/documents/{id}` | Save reviewed project ID and project name |
 | `POST /api/documents/{id}/comments` | Add a comment |
 | `GET /api/documents/{id}/file` | Serve the original PDF |
+| `DELETE /api/documents/{id}` | Delete one document and its associated data and stored PDF |
 | `POST /api/documents/{id}/retry` | Queue another attempt for a failed extraction |
 
 The browser sends one upload request per selected file, with bounded upload concurrency. A failed file does not undo successful uploads.

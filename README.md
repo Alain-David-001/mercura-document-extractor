@@ -39,7 +39,7 @@ cd app
 npm run dev
 ```
 
-Open [the workspace](http://localhost:5173) or [API docs](http://127.0.0.1:8000/docs). Upload PDFs, wait for extraction, save reviewed project fields, and add comments. Each file is queued independently. The UI refreshes status automatically; a stopped worker leaves jobs safely queued.
+Open [the workspace](http://localhost:5173) or [API docs](http://127.0.0.1:8000/docs). Upload PDFs, wait for extraction, save reviewed project fields, and add comments. Use Delete beside Open PDF to remove a selected upload, its extracted data, edits, and comments after confirmation. Each file is queued independently. The UI refreshes status automatically; a stopped worker leaves jobs safely queued.
 
 ## Configuration and limits
 

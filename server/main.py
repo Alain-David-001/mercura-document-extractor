@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -30,7 +30,7 @@ def create_app(settings: Settings | None = None):
     app.add_middleware(
         CORSMiddleware,
         allow_origins=['http://localhost:5173', 'http://127.0.0.1:5173'],
-        allow_methods=['GET', 'POST', 'PATCH'], allow_headers=['Content-Type'],
+        allow_methods=['GET', 'POST', 'PATCH', 'DELETE'], allow_headers=['Content-Type'],
     )
 
     @app.middleware('http')
@@ -69,6 +69,17 @@ def create_app(settings: Settings | None = None):
         with db.connect(settings) as conn:
             ids = [row['id'] for row in conn.execute('SELECT id FROM documents ORDER BY created_at DESC,id')]
             return [db.document(conn, document_id) for document_id in ids]
+
+    @app.delete('/api/documents/{document_id}', status_code=204)
+    def delete_document(document_id: str):
+        key = db.delete_document(settings, document_id)
+        if key is None:
+            raise HTTPException(404, 'Document not found.')
+        try:
+            (settings.uploads / key).unlink(missing_ok=True)
+        except OSError:
+            logger.warning('deleted_document_file_cleanup_failed')
+        return Response(status_code=204)
 
     @app.post('/api/documents', status_code=202, response_model=DocumentDetail)
     def upload_document(file: UploadFile = File(...)):
