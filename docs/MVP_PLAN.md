@@ -1,6 +1,6 @@
 # MVP implementation plan
 
-This records the MVP scope discussed with Alain, now implemented. See [the architecture](ARCHITECTURE.md) for the design, implementation notes, and verified limits.
+This records the implemented MVP scope. See [the architecture](ARCHITECTURE.md) for the design, implementation notes, and verified limits.
 
 ## UI
 
@@ -65,5 +65,3 @@ For large PDFs, split into chunks bounded by pages and bytes, process chunks seq
 ## Delivery checks
 
 Verify upload → extraction → edit → comment → restart persistence, malformed PDFs, provider failures, retry, and interrupted-job recovery. Run frontend build/lint and check the complete flow in the browser.
-
-Keep progress committed locally; push when the project is ready.

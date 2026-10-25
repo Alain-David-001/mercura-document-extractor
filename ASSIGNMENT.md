@@ -1,5 +1,7 @@
 # Mercura – Full-Stack Take-Home Challenge
 
+> Original challenge brief, retained for reference. The starter-code descriptions below refer to the supplied template. Follow the [project README](README.md) for current setup and implementation.
+
 Welcome! You've advanced to the stage where we want to understand how you approach a real-world full-stack engineering problem.
 
 ## Mission

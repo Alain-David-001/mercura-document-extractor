@@ -85,7 +85,7 @@ SQLite WAL and short transactions work for this local deployment; shared storage
 
 Automated tests cover upload validation, extraction with a fake provider, edits and stale-save conflicts, comments, downloads, restart persistence, retry limits, lease recovery, stale workers, concurrent jobs, Gemini response validation/cleanup, conflict warnings, document deletion (including during an in-flight extraction), missing/fresh/stale worker heartbeats, independent process registrations, heartbeat renewal while idle or extracting, and a 1,001-page synthetic PDF processed in bounded chunks. The large-file test validates orchestration, not real Gemini accuracy or latency on thousands of scanned pages.
 
-Browser checks used the supplied scanned sample with the real Gemini service: upload, extraction, failure/retry, saved edits after reload, comments without losing a metadata draft, and mixed valid/invalid uploads. The desktop and default narrow layout were inspected. Additional browser interaction was declined during verification; per-document draft switching was reviewed in code but not completed as a browser check.
+Browser checks used the supplied scanned sample with the real Gemini service: upload, extraction, failure/retry, saved edits after reload, comments without losing a metadata draft, and mixed valid/invalid uploads. The desktop and default narrow layout were inspected. Per-document draft switching was reviewed in code but was not verified in the browser.
 
 The per-document Delete button and confirmation/cancellation were checked in the browser. Deletion and stale-worker rejection were verified with isolated backend tests; existing workspace documents were retained during this check.
 
