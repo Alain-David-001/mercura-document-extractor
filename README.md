@@ -4,7 +4,7 @@ A full-stack take-home project for extracting project IDs and names from constru
 
 Built with React, TypeScript, and Vite on the frontend, and Python/FastAPI on the backend. Currently, the health-check UI and static Gemini extraction example work; the full workflow is still to be built.
 
-See [the original assignment](ASSIGNMENT.md) for requirements and [the agent guide](AGENTS.md) for project goals.
+See [the original assignment](ASSIGNMENT.md) for requirements, [the architecture](docs/ARCHITECTURE.md) for the design and diagrams, and [the agent guide](AGENTS.md) for project goals.
 
 ## Run locally
 
