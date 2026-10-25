@@ -1,34 +1,69 @@
 # Mercura Document Extractor
 
-A full-stack take-home project for extracting project IDs and names from construction specification PDFs using Google Gemini. The target workflow includes multiple uploads, background processing, editable results, and comments.
+Extract project IDs and names from construction specification PDFs with Google Gemini, then review the results, make corrections, and add comments.
 
-Built with React, TypeScript, and Vite on the frontend, and Python/FastAPI on the backend. Currently, the health-check UI and static Gemini extraction example work; the full workflow is still to be built.
+React/TypeScript and FastAPI provide the workspace and API. A separate worker processes a durable SQLite queue; original PDFs and results stay on local disk. Multiple uploads, processing states, retries, large-document chunking, and PDF access are included.
 
-See [the original assignment](ASSIGNMENT.md) for requirements, [the architecture](docs/ARCHITECTURE.md) for the design and diagrams, and [the agent guide](AGENTS.md) for project goals.
+[Assignment](ASSIGNMENT.md) · [Architecture and tradeoffs](docs/ARCHITECTURE.md) · [MVP plan](docs/MVP_PLAN.md) · [Agent guide](AGENTS.md)
 
-## Run locally
+## Setup
 
-Requires Python 3.12 and Node.js 20.19+ or 22.12+.
-
-From the repository root:
+Requires Python 3.12 and Node.js 20.19+ or 22.12+. Run from the repository root:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r server/requirements.lock.txt
-cp server/.env.example server/.env  # First setup only; set GOOGLE_API_KEY inside.
+cp server/.env.example server/.env  # First setup only; preserve any existing .env.
+# Set GOOGLE_API_KEY inside server/.env.
+cd app
+npm ci
+```
+
+## Run
+
+Use three terminals, starting from the repository root:
+
+```bash
+# API
 .venv/bin/python -m uvicorn main:app --app-dir server --env-file server/.env --reload
 ```
 
-In another terminal:
+```bash
+# Background worker (required for extraction)
+.venv/bin/python server/worker.py
+```
 
 ```bash
+# Frontend
 cd app
-npm ci
 npm run dev
 ```
 
-Open [the frontend](http://localhost:5173) or [the API docs](http://127.0.0.1:8000/docs). Keep credentials in the ignored `server/.env` file. The Gemini model can be configured with `GEMINI_MODEL`.
+Open [the workspace](http://localhost:5173) or [API docs](http://127.0.0.1:8000/docs). Upload PDFs, wait for extraction, save reviewed project fields, and add comments. Each file is queued independently. The UI refreshes status automatically; a stopped worker leaves jobs safely queued.
+
+## Configuration and limits
+
+Set these in ignored `server/.env`:
+
+| Variable | Default |
+|---|---|
+| `GOOGLE_API_KEY` | Required for the worker |
+| `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
+| `WORKER_CONCURRENCY` | `1`; set to `2` for concurrent documents |
+| `DATA_DIR` | `server/data/`, resolved from the backend code location |
+
+PDF limits: 100 MiB and 5,000 pages per file; no password-protected PDFs. Chunks are at most 40 pages and 18 MiB. The queue accepts up to 200 pending/active uploads. One oversized page may require compression. Files, SQLite data, credentials, and temporary job files are local and excluded from Git; back up the data directory to retain your workspace.
+
+This MVP is intended for a trusted local workspace. See the architecture document for restart recovery, extraction limitations, and the changes needed for a public deployment.
 
 ## Checks
 
-Run `npm run build` and `npm run lint` from `app/`. Backend dependencies are pinned in `server/requirements.lock.txt`; direct dependencies are listed in `server/requirements.txt`.
+```bash
+.venv/bin/python -m pip install -r server/requirements-dev.txt
+.venv/bin/python -m pytest server/tests -q
+cd app
+npm run build
+npm run lint
+```
+
+Backend tests use temporary databases and fake provider responses, without Gemini calls or changes to your workspace. Direct dependencies are listed in `server/requirements.txt`; the runtime lock file pins the resolved environment.

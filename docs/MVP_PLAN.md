@@ -1,6 +1,6 @@
 # MVP implementation plan
 
-This records the concrete proposal discussed with Alain. It is a plan, not implemented functionality. See [the architecture](ARCHITECTURE.md) for the broader design and diagrams.
+This records the MVP scope discussed with Alain, now implemented. See [the architecture](ARCHITECTURE.md) for the design, implementation notes, and verified limits.
 
 ## UI
 

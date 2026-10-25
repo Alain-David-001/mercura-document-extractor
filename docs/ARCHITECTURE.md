@@ -2,13 +2,11 @@
 
 ## Status
 
-This is the agreed architectural direction for the MVP, not a description of a completed implementation. The worker pool, persistence, upload workflow, and review interface still need to be built.
-
-The current baseline has a React health-check screen and a FastAPI endpoint that successfully extracts project metadata from one bundled PDF with Gemini. See the Git history for implementation progress and the [README](../README.md) for setup.
+The MVP implements this architecture: a React document workspace, FastAPI API, SQLite persistence, local PDF storage, and a separate configurable worker process. See the [MVP plan](MVP_PLAN.md) for the feature scope, Git history for progress, and the [README](../README.md) for setup.
 
 ## Overview
 
-The pool is shown as one component to keep the overview simple. It represents multiple concurrent processing loops.
+The pool is shown as one component to keep the overview simple. It supports multiple concurrent processing loops, with one enabled by default.
 
 ```mermaid
 flowchart LR
@@ -26,7 +24,7 @@ flowchart LR
 
 ## Worker detail
 
-Proposed starting configuration: one dedicated worker process with two concurrent processing loops. Pool size should be configurable. These are logical workers; they need not be separate operating-system processes.
+One dedicated worker process runs one processing loop by default. Set `WORKER_CONCURRENCY=2` to use the two-loop configuration illustrated below. Concurrency is configurable from 1 to 8; these are logical workers inside the same process.
 
 ```mermaid
 flowchart LR
@@ -34,7 +32,7 @@ flowchart LR
     API --> DB[("SQLite: documents, jobs, results, comments")]
     API --> Files[("Local PDF storage")]
 
-    subgraph Pool["Bounded worker pool — initially 2 concurrent jobs"]
+    subgraph Pool["Bounded worker pool — example configuration: 2 jobs"]
         W1["Worker 1"]
         W2["Worker 2"]
     end
@@ -59,9 +57,31 @@ flowchart LR
 ## Reliability and tradeoffs
 
 - SQLite and local files keep the MVP easy to run on one machine. Queue operations use short transactions; database locks must not be held during Gemini calls.
-- Interrupted jobs need recoverable claims, such as expiring leases with heartbeats. Retry processing may run more than once, so saving results must tolerate duplicate attempts and reject stale workers. Exact recovery mechanics remain to be finalized.
+- Jobs use 90-second leases, renewed every 30 seconds. An expired claim is eligible for recovery on the next queue scan, up to three automatic attempts. Tokens and lease checks reject stale workers. Retryable provider errors use delayed retries; terminal failures expose an explicit retry action. A retry repeats the document from the beginning, so provider calls may be repeated after interruption.
 - Bound document concurrency, chunk sizes, and provider requests to control memory and API quota. Limit retries to transient failures and expose terminal errors clearly.
 - Scanned sample PDFs require visual document understanding. Embedded-text extraction alone is insufficient. Chunking must respect provider page, byte, and context limits; conflicting extracted metadata needs explicit handling.
 - Polling is sufficient for the MVP; updates arrive after a short delay. Authentication, shared object storage, a server database, and a dedicated queue are production extensions to evaluate when moving beyond a single trusted local deployment.
 
-Keep implementation details here as they are decided, and distinguish proposed behavior from behavior verified in code.
+## Implementation map
+
+- `server/main.py`: validated uploads, document APIs, optimistic edit revisions, comments, and PDF serving.
+- `server/db.py`: schema, persistence, atomic claims, leases, retries, and stale-owner protection. Database transactions never span provider calls.
+- `server/processing.py`: PDF validation, page/byte-bounded chunks, Gemini Files API uploads, supported structured-output schema, strict local response validation, and conflict warnings. Remote files are deleted after each call on a best-effort basis.
+- `server/worker.py`: separate asynchronous processing loops, off-thread PDF/database work, heartbeats, and document-scoped logs without raw provider errors or credentials.
+- `app/src/api.ts`, `app/src/App.tsx`, and `app/src/components/`: typed HTTP contracts, bounded parallel uploads, status polling, review forms, per-document drafts, and comments. Vite proxies API requests to FastAPI.
+
+## Practical limits and production extensions
+
+The API accepts one PDF per request; the browser uploads up to two files concurrently. Files are written with generated names before document/job records commit. Failed uploads are cleaned up, but a process crash between filesystem and database operations can leave an orphaned file. Forced worker termination can also leave temporary chunks. A production deployment should reconcile these periodically.
+
+Chunks are processed sequentially within a document. Every chunk is checked for metadata; the first nonempty value is selected deterministically and disagreements are flagged for human review. This favors full-document coverage over lowest latency/cost. Missing fields remain null. AI output still requires human verification; large scans with conflicting headers may need a more sophisticated reconciliation strategy.
+
+The upload limit is checked before parsing when Content-Length is supplied and while copying the spooled upload. A public deployment needs an ingress body-size limit (including chunked requests), authentication, storage quotas, lifecycle policies, and hardened handling of untrusted files. Document listing is unpaginated for this local MVP; add indexed pagination and less frequent idle polling as workspace size grows. There is no user identity system: comments are workspace notes labelled “You.”
+
+SQLite WAL and short transactions work for this local deployment; shared storage, a server database, durable chunk checkpoints, migrations, provider-wide quota management, and a dedicated queue should be evaluated before horizontal deployment.
+
+## Verification
+
+Automated tests cover upload validation, extraction with a fake provider, edits and stale-save conflicts, comments, downloads, restart persistence, retry limits, lease recovery, stale workers, concurrent jobs, Gemini response validation/cleanup, conflict warnings, and a 1,001-page synthetic PDF processed in bounded chunks. The large-file test validates orchestration, not real Gemini accuracy or latency on thousands of scanned pages.
+
+Browser checks used the supplied scanned sample with the real Gemini service: upload, extraction, failure/retry, saved edits after reload, comments without losing a metadata draft, and mixed valid/invalid uploads. The desktop and default narrow layout were inspected. Additional browser interaction was declined during verification; per-document draft switching was reviewed in code but not completed as a browser check.
