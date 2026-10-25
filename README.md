@@ -47,18 +47,27 @@ You're free to use additional libraries or (AI) tools where you see fit. The goa
 You can start the react frontend with:
 ````
 cd app
-npm i
+npm ci
 npm run dev
 ````
 
 ### Server
 
-You can start your server with the commands below. You might need to install some of the dependencies beforehand e.g. `pip install google-genai`.
+Use Python 3.12 and a project-local virtual environment. From the repository root:
 
-````
-cd server
-uvicorn main:app --reload
-````
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r server/requirements.lock.txt
+# On a fresh checkout, copy server/.env.example to server/.env and set GOOGLE_API_KEY.
+.venv/bin/python -m uvicorn main:app --app-dir server --env-file server/.env --reload
+```
+
+The backend runs at http://127.0.0.1:8000, with API documentation at http://127.0.0.1:8000/docs.
+The frontend requires Node.js 20.19+ or 22.12+ and normally runs at http://localhost:5173.
+
+`server/requirements.txt` records direct dependencies; `server/requirements.lock.txt` pins the complete tested environment. The virtual environment, frontend dependencies, and local credentials are ignored by Git.
+
+Frontend checks: run `npm run build` and `npm run lint` from `app/`.
 
 The file `main.py` contains an example using a static PDF and a Gemini prompt. You can use this as a reference to build your own dynamic endpoint for PDF upload and AI extraction.
 
